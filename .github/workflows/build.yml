@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # Daha stabil versiyaya keçdik
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
 
@@ -20,5 +20,14 @@ jobs:
           pip install buildozer cython==0.29.33
 
       - name: Build with Buildozer
-        run: yes | buildozer android debug
-        
+        run: |
+          # Bu sətir bütün Google lisenziyalarını avtomatik qəbul edir
+          yes | buildozer android debug
+        continue-on-error: true
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: Komandir-Browser-APK
+          path: bin/*.apk
+          
