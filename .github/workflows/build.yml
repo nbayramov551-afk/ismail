@@ -15,19 +15,19 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev
+          sudo apt install -y git zip unzip openjdk-11-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev
           pip install --upgrade pip
           pip install buildozer cython==0.29.33
 
       - name: Build with Buildozer
         run: |
-          # Bu sətir bütün Google lisenziyalarını avtomatik qəbul edir
+          # SDK lisenziyalarını mütləq şəkildə qəbul etdiririk
           yes | buildozer android debug
         continue-on-error: true
 
       - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
-          name: Komandir-Browser-APK
+          name: Komandir-Final-APK
           path: bin/*.apk
           
