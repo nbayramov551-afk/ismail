@@ -6,10 +6,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      
       - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1.6.1  # Versiyanı 1.6.1 etdik (Xəta burada idi)
+        uses: ArtemSBulgakov/buildozer-action@v1
         with:
           command: android debug
           buildozer_version: master
-
           
