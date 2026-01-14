@@ -3,35 +3,32 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-
       - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev
           pip install --upgrade pip
           pip install "buildozer>=1.5.0" "cython<3.0"
-
+      - name: Force Fix License
+        run: |
+          # Bu hisse o lisenziya problemini yan kecir
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          yes | sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses || true
       - name: Build with Buildozer
         run: |
+          # 'yes' komandasi ile her seye OK deyirik
           yes | buildozer android debug
-        
-      - name: Find and Move APK
-        run: |
-          mkdir -p output_apk
-          find . -name "*.apk" -exec cp {} output_apk/ \;
-          ls -R output_apk/
-
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Komandir-Final-APK
-          path: output_apk/*.apk
+          path: bin/*.apk
           
